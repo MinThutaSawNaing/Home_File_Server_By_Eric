@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Small Business File Server</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --accent-color: #4fc3f7;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --danger-color: #f44336;
+            --light-color: #f5f5f5;
+            --dark-color: #333;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--box-shadow);
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            font-size: 2rem;
+        }
+
+        .auth-section {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #29b6f6;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: white;
+            border: 1px solid white;
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .server-status {
+            background-color: white;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+            box-shadow: var(--box-shadow);
+        }
+
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--success-color);
+        }
+
+        .status-dot.warning {
+            background-color: var(--warning-color);
+        }
+
+        .status-dot.danger {
+            background-color: var(--danger-color);
+        }
+
+        .status-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .metric-card {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .upload-section {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+            box-shadow: var(--box-shadow);
+        }
+
+        .upload-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent-color);
+            background-color: #f0f9ff;
+        }
+
+        .upload-area.dragover {
+            border-color: var(--accent-color);
+            background-color: #e3f2fd;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #aaa;
+            margin-bottom: 1rem;
+        }
+
+        .progress-container {
+            margin-top: 1rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--accent-color);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .file-manager {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+        }
+
+        .folder-sidebar {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-right: 1px solid #eee;
+            height: 600px;
+            overflow-y: auto;
+        }
+
+        .folder-tree {
+            list-style: none;
+        }
+
+        .folder-item {
+            padding: 8px 12px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .folder-item:hover {
+            background-color: #e3f2fd;
+        }
+
+        .folder-item.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .folder-icon {
+            margin-right: 8px;
+            color: #888;
+        }
+
+        .folder-item.active .folder-icon {
+            color: white;
+        }
+
+        .add-folder-btn {
+            margin-top: 1rem;
+            width: 100%;
+            padding: 8px;
+            background-color: var(--light-color);
+            border: 1px dashed #ccc;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .add-folder-btn:hover {
+            background-color: #e9ecef;
+        }
+
+        .file-content {
+            padding: 1.5rem;
+            height: 600px;
+            overflow-y: auto;
+        }
+
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .file-card {
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .file-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .file-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .file-name {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-size {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .file-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .file-action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: #666;
+            padding: 2px;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-action-btn:hover {
+            background-color: #e9ecef;
+            color: var(--primary-color);
+        }
+
+        .preview-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .preview-content {
+            background-color: white;
+            border-radius: var(--border-radius);
+            max-width: 90%;
+            max-height: 90%;
+            overflow: auto;
+            position: relative;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .preview-title {
+            font-weight: bold;
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .close-preview {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .preview-body {
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+        }
+
+        .video-preview {
+            max-width: 100%;
+            max-height: 70vh;
+        }
+
+        .document-preview {
+            width: 100%;
+            height: 70vh;
+            border: none;
+        }
+
+        .audio-preview {
+            width: 80%;
+            margin: 20px auto;
+        }
+
+        .login-modal, .register-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .auth-form {
+            background-color: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.2);
+        }
+
+        .form-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            color: white;
+            z-index: 2000;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            box-shadow: var(--box-shadow);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background-color: var(--success-color);
+        }
+
+        .notification.error {
+            background-color: var(--danger-color);
+        }
+
+        .notification.info {
+            background-color: var(--primary-color);
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 0.5rem 1rem;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+        }
+
+        .breadcrumb-item {
+            cursor: pointer;
+            color: var(--primary-color);
+        }
+
+        .breadcrumb-item:not(:last-child)::after {
+            content: " > ";
+            margin: 0 8px;
+            color: #666;
+        }
+
+        .breadcrumb-item.active {
+            color: #666;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .file-manager {
+                grid-template-columns: 1fr;
+            }
+            
+            .folder-sidebar {
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+            
+            .file-content {
+                height: auto;
+            }
+        }
+
+        /* Icons using Unicode characters as fallback */
+        .icon {
+            font-style: normal;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-server"></i>
+                <span>Small Business File Server</span>
+            </div>
+            <div class="auth-section">
+                <button id="loginBtn" class="btn btn-secondary">Login</button>
+                <button id="registerBtn" class="btn btn-primary">Register</button>
+                <div id="userProfile" style="display: none; color: white; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-user"></i>
+                    <span id="userName"></span>
+                    <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="server-status">
+            <div class="status-header">
+                <h2>Server Status</h2>
+                <div class="status-indicator">
+                    <div class="status-dot" id="serverStatusDot"></div>
+                    <span id="serverStatusText">Checking...</span>
+                </div>
+            </div>
+            <div class="status-metrics">
+                <div class="metric-card">
+                    <div class="metric-value" id="storageUsed">0%</div>
+                    <div class="metric-label">Storage Used</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="activeUsers">0</div>
+                    <div class="metric-label">Active Users</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="totalFiles">0</div>
+                    <div class="metric-label">Total Files</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="uptime">0s</div>
+                    <div class="metric-label">Uptime</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="upload-section" id="uploadSection" style="display: none;">
+            <div class="upload-header">
+                <h2>Upload Files</h2>
+                <div>
+                    <button id="createFolderBtn" class="btn btn-primary">Create New Folder</button>
+                </div>
+            </div>
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <p>Drag & drop files here or click to browse</p>
+                <input type="file" id="fileInput" multiple style="display: none;">
+            </div>
+            <div class="progress-container" id="progressContainer" style="display: none;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Uploading: <span id="currentFileName">-</span></span>
+                    <span id="progressPercentage">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="file-manager" id="fileManager" style="display: none;">
+            <div class="folder-sidebar">
+                <h3>Folders</h3>
+                <ul class="folder-tree" id="folderTree">
+                    <li class="folder-item active" data-path="/">
+                        <i class="fas fa-folder folder-icon"></i>
+                        <span>Root</span>
+                    </li>
+                    <!-- Folders will be dynamically added here -->
+                </ul>
+                <button class="add-folder-btn" id="addFolderBtn">
+                    <i class="fas fa-plus"></i> Add New Folder
+                </button>
+            </div>
+            <div class="file-content">
+                <div class="breadcrumb" id="breadcrumb">
+                    <span class="breadcrumb-item active" data-path="/">Root</span>
+                </div>
+                <div class="file-grid" id="fileGrid">
+                    <!-- Files will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div class="preview-modal" id="previewModal">
+        <div class="preview-content">
+            <div class="preview-header">
+                <div class="preview-title" id="previewTitle">File Preview</div>
+                <button class="close-preview" id="closePreview">&times;</button>
+            </div>
+            <div class="preview-body" id="previewBody">
+                <!-- Preview content will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="login-modal" id="loginModal">
+        <div class="auth-form">
+            <h2 style="margin-bottom: 1.5rem; text-align: center;">Login</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label" for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" class="form-input" required>
+                </div>
+                <div class="form-footer">
+                    <button type="button" id="closeLoginModal" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="register-modal" id="registerModal">
+        <div class="auth-form">
+            <h2 style="margin-bottom: 1.5rem; text-align: center;">Register</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label class="form-label" for="registerName">Full Name</label>
+                    <input type="text" id="registerName" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="registerConfirmPassword">Confirm Password</label>
+                    <input type="password" id="registerConfirmPassword" class="form-input" required>
+                </div>
+                <div class="form-footer">
+                    <button type="button" id="closeRegisterModal" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Register</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // DOM Elements
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const loginModal = document.getElementById('loginModal');
+        const registerModal = document.getElementById('registerModal');
+        const closeLoginModal = document.getElementById('closeLoginModal');
+        const closeRegisterModal = document.getElementById('closeRegisterModal');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const userProfile = document.getElementById('userProfile');
+        const userName = document.getElementById('userName');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const uploadSection = document.getElementById('uploadSection');
+        const fileManager = document.getElementById('fileManager');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const progressContainer = document.getElementById('progressContainer');
+        const currentFileName = document.getElementById('currentFileName');
+        const progressPercentage = document.getElementById('progressPercentage');
+        const progressFill = document.getElementById('progressFill');
+        const folderTree = document.getElementById('folderTree');
+        const fileGrid = document.getElementById('fileGrid');
+        const breadcrumb = document.getElementById('breadcrumb');
+        const addFolderBtn = document.getElementById('addFolderBtn');
+        const createFolderBtn = document.getElementById('createFolderBtn');
+        const previewModal = document.getElementById('previewModal');
+        const previewTitle = document.getElementById('previewTitle');
+        const previewBody = document.getElementById('previewBody');
+        const closePreview = document.getElementById('closePreview');
+        const notification = document.getElementById('notification');
+        const serverStatusDot = document.getElementById('serverStatusDot');
+        const serverStatusText = document.getElementById('serverStatusText');
+        const storageUsed = document.getElementById('storageUsed');
+        const activeUsers = document.getElementById('activeUsers');
+        const totalFiles = document.getElementById('totalFiles');
+        const uptime = document.getElementById('uptime');
+
+        // State
+        let currentUser = null;
+        let currentPath = '/';
+        let folders = [];
+        let files = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthStatus();
+            updateServerStatus();
+            setInterval(updateServerStatus, 30000); // Update every 30 seconds
+        });
+
+        // Auth Functions
+        function checkAuthStatus() {
+            fetch('/api/auth/status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.authenticated) {
+                        currentUser = data.user;
+                        showAuthenticatedUI();
+                        loadFolders();
+                        loadFiles(currentPath);
+                    } else {
+                        showGuestUI();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking auth status:', error);
+                    showGuestUI();
+                });
+        }
+
+        function showGuestUI() {
+            loginBtn.style.display = 'block';
+            registerBtn.style.display = 'block';
+            userProfile.style.display = 'none';
+            uploadSection.style.display = 'none';
+            fileManager.style.display = 'none';
+        }
+
+        function showAuthenticatedUI() {
+            loginBtn.style.display = 'none';
+            registerBtn.style.display = 'none';
+            userName.textContent = currentUser.name;
+            userProfile.style.display = 'flex';
+            uploadSection.style.display = 'block';
+            fileManager.style.display = 'grid';
+        }
+
+        // Event Listeners
+        loginBtn.addEventListener('click', () => {
+            loginModal.style.display = 'flex';
+        });
+
+        registerBtn.addEventListener('click', () => {
+            registerModal.style.display = 'flex';
+        });
+
+        closeLoginModal.addEventListener('click', () => {
+            loginModal.style.display = 'none';
+        });
+
+        closeRegisterModal.addEventListener('click', () => {
+            registerModal.style.display = 'none';
+        });
+
+        closePreview.addEventListener('click', () => {
+            previewModal.style.display = 'none';
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    currentUser = null;
+                    showGuestUI();
+                    showToast('Logged out successfully', 'info');
+                }
+            })
+            .catch(error => {
+                console.error('Logout error:', error);
+                showToast('Logout failed', 'error');
+            });
+        });
+
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    currentUser = data.user;
+                    loginModal.style.display = 'none';
+                    showAuthenticatedUI();
+                    showToast('Login successful', 'success');
+                    loadFolders();
+                    loadFiles(currentPath);
+                } else {
+                    showToast(data.message || 'Login failed', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Login error:', error);
+                showToast('Login failed', 'error');
+            });
+        });
+
+        registerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match', 'error');
+                return;
+            }
+
+            fetch('/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, email, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    registerModal.style.display = 'none';
+                    showToast('Registration successful. Please login.', 'success');
+                } else {
+                    showToast(data.message || 'Registration failed', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Registration error:', error);
+                showToast('Registration failed', 'error');
+            });
+        });
+
+        // Upload Functions
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            if (e.dataTransfer.files.length > 0) {
+                handleFiles(e.dataTransfer.files);
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                handleFiles(fileInput.files);
+            }
+        });
+
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            
+            progressContainer.style.display = 'block';
+            
+            // Upload each file
+            for (let i = 0; i < files.length; i++) {
+                uploadFile(files[i], i, files.length);
+            }
+        }
+
+        function uploadFile(file, index, total) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('path', currentPath);
+
+            const xhr = new XMLHttpRequest();
+            
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const percentComplete = Math.round((e.loaded / e.total) * 100);
+                    currentFileName.textContent = `${file.name} (${index + 1}/${total})`;
+                    progressPercentage.textContent = `${percentComplete}%`;
+                    progressFill.style.width = `${percentComplete}%`;
+                }
+            });
+
+            xhr.addEventListener('load', () => {
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        if (index === total - 1) {
+                            setTimeout(() => {
+                                progressContainer.style.display = 'none';
+                                currentFileName.textContent = '-';
+                                progressPercentage.textContent = '0%';
+                                progressFill.style.width = '0%';
+                                showToast('Files uploaded successfully', 'success');
+                                loadFiles(currentPath);
+                            }, 1000);
+                        }
+                    } else {
+                        showToast(`Upload failed: ${response.message}`, 'error');
+                    }
+                } else {
+                    showToast('Upload failed', 'error');
+                }
+            });
+
+            xhr.addEventListener('error', () => {
+                showToast('Upload failed', 'error');
+            });
+
+            xhr.open('POST', '/api/files/upload');
+            xhr.send(formData);
+        }
+
+        // Folder Management
+        addFolderBtn.addEventListener('click', createNewFolder);
+        createFolderBtn.addEventListener('click', createNewFolder);
+
+        function createNewFolder() {
+            const folderName = prompt('Enter folder name:');
+            if (!folderName) return;
+
+            fetch('/api/folders/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: folderName,
+                    path: currentPath
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Folder created successfully', 'success');
+                    loadFolders();
+                } else {
+                    showToast(data.message || 'Failed to create folder', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Create folder error:', error);
+                showToast('Failed to create folder', 'error');
+            });
+        }
+
+        folderTree.addEventListener('click', (e) => {
+            const folderItem = e.target.closest('.folder-item');
+            if (folderItem) {
+                // Remove active class from all items
+                document.querySelectorAll('.folder-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Add active class to clicked item
+                folderItem.classList.add('active');
+                
+                // Update current path
+                currentPath = folderItem.dataset.path;
+                
+                // Load files for this path
+                loadFiles(currentPath);
+                
+                // Update breadcrumb
+                updateBreadcrumb(currentPath);
+            }
+        });
+
+        function updateBreadcrumb(path) {
+            breadcrumb.innerHTML = '';
+            
+            const parts = path.split('/').filter(p => p);
+            let currentPathStr = '/';
+            
+            // Add root
+            const rootItem = document.createElement('span');
+            rootItem.className = 'breadcrumb-item';
+            rootItem.textContent = 'Root';
+            rootItem.dataset.path = '/';
+            rootItem.addEventListener('click', () => {
+                currentPath = '/';
+                document.querySelectorAll('.folder-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                document.querySelector('.folder-item[data-path="/"]').classList.add('active');
+                loadFiles(currentPath);
+                updateBreadcrumb(currentPath);
+            });
+            
+            if (path === '/') {
+                rootItem.classList.add('active');
+            }
+            
+            breadcrumb.appendChild(rootItem);
+            
+            // Add other parts
+            parts.forEach((part, index) => {
+                const span = document.createElement('span');
+                span.className = 'breadcrumb-item';
+                span.textContent = part;
+                
+                currentPathStr += part + '/';
+                span.dataset.path = currentPathStr;
+                
+                span.addEventListener('click', () => {
+                    currentPath = span.dataset.path;
+                    document.querySelectorAll('.folder-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    const activeItem = document.querySelector(`.folder-item[data-path="${currentPath}"]`);
+                    if (activeItem) {
+                        activeItem.classList.add('active');
+                    }
+                    loadFiles(currentPath);
+                    updateBreadcrumb(currentPath);
+                });
+                
+                if (index === parts.length - 1) {
+                    span.classList.add('active');
+                }
+                
+                const separator = document.createElement('span');
+                separator.textContent = ' > ';
+                separator.style.color = '#666';
+                separator.style.margin = '0 8px';
+                
+                breadcrumb.appendChild(separator);
+                breadcrumb.appendChild(span);
+            });
+        }
+
+        // File Management
+        function loadFolders() {
+            fetch('/api/folders/list')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        folders = data.folders;
+                        renderFolders();
+                    }
+                })
+                .catch(error => {
+                    console.error('Load folders error:', error);
+                });
+        }
+
+        function renderFolders() {
+            // Keep the root folder
+            const rootItem = folderTree.querySelector('li[data-path="/"]');
+            folderTree.innerHTML = '';
+            folderTree.appendChild(rootItem);
+            
+            // Add other folders
+            folders.forEach(folder => {
+                const li = document.createElement('li');
+                li.className = 'folder-item';
+                if (folder.path === currentPath) {
+                    li.classList.add('active');
+                }
+                li.dataset.path = folder.path;
+                
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-folder folder-icon';
+                li.appendChild(icon);
+                
+                const span = document.createElement('span');
+                span.textContent = folder.name;
+                li.appendChild(span);
+                
+                folderTree.appendChild(li);
+            });
+        }
+
+        function loadFiles(path) {
+            fetch(`/api/files/list?path=${encodeURIComponent(path)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        files = data.files;
+                        renderFiles();
+                    }
+                })
+                .catch(error => {
+                    console.error('Load files error:', error);
+                });
+        }
+
+        function renderFiles() {
+            fileGrid.innerHTML = '';
+            
+            if (files.length === 0) {
+                fileGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #666;">No files found. Upload some files to get started.</p>';
+                return;
+            }
+            
+            files.forEach(file => {
+                const div = document.createElement('div');
+                div.className = 'file-card';
+                div.dataset.filename = file.name;
+                div.dataset.filepath = file.path;
+                
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'file-actions';
+                
+                const previewBtn = document.createElement('button');
+                previewBtn.className = 'file-action-btn';
+                previewBtn.innerHTML = '<i class="fas fa-eye"></i>';
+                previewBtn.title = 'Preview';
+                previewBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    previewFile(file);
+                });
+                
+                const downloadBtn = document.createElement('button');
+                downloadBtn.className = 'file-action-btn';
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
+                downloadBtn.title = 'Download';
+                downloadBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    downloadFile(file);
+                });
+                
+                const moveBtn = document.createElement('button');
+                moveBtn.className = 'file-action-btn';
+                moveBtn.innerHTML = '<i class="fas fa-arrows-alt"></i>';
+                moveBtn.title = 'Move';
+                moveBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    moveFile(file);
+                });
+                
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'file-action-btn';
+                copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+                copyBtn.title = 'Copy';
+                copyBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    copyFile(file);
+                });
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'file-action-btn';
+                deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                deleteBtn.title = 'Delete';
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteFile(file);
+                });
+                
+                actionsDiv.appendChild(previewBtn);
+                actionsDiv.appendChild(downloadBtn);
+                actionsDiv.appendChild(moveBtn);
+                actionsDiv.appendChild(copyBtn);
+                actionsDiv.appendChild(deleteBtn);
+                
+                div.appendChild(actionsDiv);
+                
+                const icon = document.createElement('div');
+                icon.className = 'file-icon';
+                icon.innerHTML = getFileIcon(file.name);
+                
+                const name = document.createElement('div');
+                name.className = 'file-name';
+                name.textContent = file.name;
+                
+                const size = document.createElement('div');
+                size.className = 'file-size';
+                size.textContent = formatFileSize(file.size);
+                
+                div.appendChild(icon);
+                div.appendChild(name);
+                div.appendChild(size);
+                
+                div.addEventListener('click', () => {
+                    previewFile(file);
+                });
+                
+                fileGrid.appendChild(div);
+            });
+        }
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            
+            if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'].includes(ext)) {
+                return '<i class="fas fa-image"></i>';
+            } else if (['mp4', 'avi', 'mkv', 'mov'].includes(ext)) {
+                return '<i class="fas fa-video"></i>';
+            } else if (['mp3', 'wav', 'aac', 'flac'].includes(ext)) {
+                return '<i class="fas fa-music"></i>';
+            } else if (['txt'].includes(ext)) {
+                return '<i class="fas fa-file-alt"></i>';
+            } else if (['pdf'].includes(ext)) {
+                return '<i class="fas fa-file-pdf"></i>';
+            } else if (['doc', 'docx'].includes(ext)) {
+                return '<i class="fas fa-file-word"></i>';
+            } else if (['xls', 'xlsx'].includes(ext)) {
+                return '<i class="fas fa-file-excel"></i>';
+            } else if (['ppt', 'pptx'].includes(ext)) {
+                return '<i class="fas fa-file-powerpoint"></i>';
+            } else if (['zip', 'rar', '7z'].includes(ext)) {
+                return '<i class="fas fa-file-archive"></i>';
+            } else if (['exe', 'msi', 'apk', 'dmg'].includes(ext)) {
+                return '<i class="fas fa-file-code"></i>';
+            } else {
+                return '<i class="fas fa-file"></i>';
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // File Operations
+        function previewFile(file) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            previewTitle.textContent = file.name;
+            previewBody.innerHTML = '';
+            
+            if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(ext)) {
+                const img = document.createElement('img');
+                img.src = `/api/files/download?path=${encodeURIComponent(file.path)}`;
+                img.className = 'image-preview';
+                img.alt = file.name;
+                previewBody.appendChild(img);
+            } else if (['mp4', 'avi', 'mkv', 'mov'].includes(ext)) {
+                const video = document.createElement('video');
+                video.className = 'video-preview';
+                video.controls = true;
+                video.src = `/api/files/download?path=${encodeURIComponent(file.path)}`;
+                previewBody.appendChild(video);
+            } else if (['mp3', 'wav', 'aac', 'flac'].includes(ext)) {
+                const audio = document.createElement('audio');
+                audio.className = 'audio-preview';
+                audio.controls = true;
+                audio.src = `/api/files/download?path=${encodeURIComponent(file.path)}`;
+                previewBody.appendChild(audio);
+            } else if (['pdf', 'txt', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) {
+                if (ext === 'pdf') {
+                    const embed = document.createElement('embed');
+                    embed.src = `/api/files/download?path=${encodeURIComponent(file.path)}`;
+                    embed.type = 'application/pdf';
+                    embed.className = 'document-preview';
+                    previewBody.appendChild(embed);
+                } else if (ext === 'txt') {
+                    fetch(`/api/files/download?path=${encodeURIComponent(file.path)}`)
+                        .then(response => response.text())
+                        .then(text => {
+                            const pre = document.createElement('pre');
+                            pre.style.whiteSpace = 'pre-wrap';
+                            pre.style.wordWrap = 'break-word';
+                            pre.style.maxHeight = '70vh';
+                            pre.style.overflow = 'auto';
+                            pre.textContent = text;
+                            previewBody.appendChild(pre);
+                        });
+                    return;
+                } else {
+                    previewBody.innerHTML = `<p>Preview not available for ${file.name}. You can download the file to view it.</p>
+                        <button class="btn btn-primary" onclick="downloadFileFromPreview('${encodeURIComponent(file.path)}', '${file.name}')">Download</button>`;
+                    window.downloadFileFromPreview = function(path, name) {
+                        const link = document.createElement('a');
+                        link.href = `/api/files/download?path=${path}`;
+                        link.download = name;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    };
+                    previewModal.style.display = 'flex';
+                    return;
+                }
+            } else {
+                previewBody.innerHTML = `<p>Preview not available for this file type.</p>
+                    <button class="btn btn-primary" onclick="downloadFileFromPreview('${encodeURIComponent(file.path)}', '${file.name}')">Download</button>`;
+                window.downloadFileFromPreview = function(path, name) {
+                    const link = document.createElement('a');
+                    link.href = `/api/files/download?path=${path}`;
+                    link.download = name;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                };
+                previewModal.style.display = 'flex';
+                return;
+            }
+            
+            previewModal.style.display = 'flex';
+        }
+
+        function downloadFile(file) {
+            const link = document.createElement('a');
+            link.href = `/api/files/download?path=${encodeURIComponent(file.path)}`;
+            link.download = file.name;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function moveFile(file) {
+            const targetPath = prompt('Enter the target folder path (e.g., /Documents/):', currentPath);
+            if (!targetPath) return;
+            
+            fetch('/api/files/move', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    source: file.path,
+                    destination: targetPath
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('File moved successfully', 'success');
+                    loadFiles(currentPath);
+                } else {
+                    showToast(data.message || 'Failed to move file', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Move file error:', error);
+                showToast('Failed to move file', 'error');
+            });
+        }
+
+        function copyFile(file) {
+            const targetPath = prompt('Enter the target folder path (e.g., /Documents/):', currentPath);
+            if (!targetPath) return;
+            
+            fetch('/api/files/copy', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    source: file.path,
+                    destination: targetPath
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('File copied successfully', 'success');
+                    loadFiles(currentPath);
+                } else {
+                    showToast(data.message || 'Failed to copy file', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Copy file error:', error);
+                showToast('Failed to copy file', 'error');
+            });
+        }
+
+        function deleteFile(file) {
+            if (!confirm(`Are you sure you want to delete ${file.name}?`)) return;
+            
+            fetch('/api/files/delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    path: file.path
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('File deleted successfully', 'success');
+                    loadFiles(currentPath);
+                } else {
+                    showToast(data.message || 'Failed to delete file', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Delete file error:', error);
+                showToast('Failed to delete file', 'error');
+            });
+        }
+
+        // Server Status
+        function updateServerStatus() {
+            fetch('/api/server/status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update status indicator
+                        if (data.status === 'online') {
+                            serverStatusDot.className = 'status-dot';
+                            serverStatusText.textContent = 'Online';
+                        } else if (data.status === 'warning') {
+                            serverStatusDot.className = 'status-dot warning';
+                            serverStatusText.textContent = 'Warning';
+                        } else {
+                            serverStatusDot.className = 'status-dot danger';
+                            serverStatusText.textContent = 'Offline';
+                        }
+                        
+                        // Update metrics
+                        storageUsed.textContent = data.storageUsed;
+                        activeUsers.textContent = data.activeUsers;
+                        totalFiles.textContent = data.totalFiles;
+                        uptime.textContent = formatUptime(data.uptime);
+                    }
+                })
+                .catch(error => {
+                    console.error('Server status error:', error);
+                    serverStatusDot.className = 'status-dot danger';
+                    serverStatusText.textContent = 'Error';
+                });
+        }
+
+        function formatUptime(seconds) {
+            if (seconds < 60) {
+                return `${seconds}s`;
+            } else if (seconds < 3600) {
+                return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+            } else if (seconds < 86400) {
+                return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
+            } else {
+                return `${Math.floor(seconds / 86400)}d ${Math.floor((seconds % 86400) / 3600)}h`;
+            }
+        }
+
+        // Utility Functions
+        function showToast(message, type = 'info') {
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === loginModal) {
+                loginModal.style.display = 'none';
+            }
+            if (e.target === registerModal) {
+                registerModal.style.display = 'none';
+            }
+            if (e.target === previewModal) {
+                previewModal.style.display = 'none';
+            }
+        });
+
+        // Close modals with Escape key
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                loginModal.style.display = 'none';
+                registerModal.style.display = 'none';
+                previewModal.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
